@@ -4,14 +4,14 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/twitocode/go-web/internal/books"
 	"github.com/twitocode/go-web/internal/authors"
+	"github.com/twitocode/go-web/internal/books"
 	"gorm.io/gorm"
 )
 
 type Server struct {
-	Port   string 
-  DB *gorm.DB
+	Port   string
+	DB     *gorm.DB
 	Router chi.Router
 }
 
@@ -19,20 +19,19 @@ func NewServer(port string, db *gorm.DB) *Server {
 	return &Server{
 		Port:   port,
 		Router: chi.NewRouter(),
-    DB: db,
+		DB:     db,
 	}
 }
 
 func (s *Server) Run() error {
-  br := books.NewBookRepository(s.DB)
-  ar := authors.NewAuthorRepository(s.DB)
-    
-  bh := books.NewBooksHandler(br, ar)
-  ah := authors.NewAuthorsHandler(ar)
+	br := books.NewBookRepository(s.DB)
+	ar := authors.NewAuthorRepository(s.DB)
 
+	bc := books.NewBooksController(br, ar)
+	ac := authors.NewAuthorsController(ar)
 
-	s.Router.Route(bh.Route, bh.RegisterRoutes)
-	s.Router.Route(ah.Route, ah.RegisterRoutes)
+	s.Router.Route(bc.Route, bc.RegisterRoutes)
+	s.Router.Route(ac.Route, ac.RegisterRoutes)
 
 	return http.ListenAndServe(s.Port, s.Router)
 }

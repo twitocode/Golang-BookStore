@@ -1,8 +1,7 @@
 package authors
 
 import (
-	"fmt"
-
+	"github.com/google/uuid"
 	"github.com/twitocode/go-web/internal/database"
 	"gorm.io/gorm"
 )
@@ -16,21 +15,24 @@ func NewAuthorRepository(db *gorm.DB) *AuthorsRepository {
 	return &AuthorsRepository{DB: db}
 }
 
-func (r AuthorsRepository) GetAllAuthors() []database.Author {
+func (r AuthorsRepository) GetAllAuthors() ([]database.Author, error) {
 	var authors []database.Author
-	r.DB.Find(&authors)
+	res := r.DB.Find(&authors)
 
-	return authors
+	return authors, res.Error
 }
 
-func (r AuthorsRepository) GetAuthorById(id uint) database.Author {
+func (r AuthorsRepository) GetAuthorById(id string) (database.Author, error) {
 	var author database.Author
-  fmt.Println(author)
-	r.DB.Find(&author, database.Author{Model: gorm.Model{ID: id}})
+	res := r.DB.Find(&author, database.Author{ID: id})
 
-	return author
+	return author, res.Error
 }
 
-func (r AuthorsRepository) CreateAuthor(data *database.Author) {
-	r.DB.Create(data)
+func (r AuthorsRepository) CreateAuthor(data CreateAuthorRequest) error {
+	return r.DB.Create(&database.Author{
+		ID:        uuid.NewString(),
+		FirstName: data.FirstName,
+		LastName:  data.LastName,
+	}).Error
 }
